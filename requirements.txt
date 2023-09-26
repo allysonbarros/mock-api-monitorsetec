@@ -1,0 +1,6 @@
+uvicorn
+faker
+fastapi==0.99.1
+pydantic==1.10.11 
+PyJWT
+fastapi_jwt_auth
