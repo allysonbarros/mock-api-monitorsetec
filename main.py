@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Header, Request
+from fastapi import FastAPI, Depends, HTTPException, status, Header, Request,Form
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials, OAuth2PasswordBearer
 from fastapi_jwt_auth import AuthJWT
@@ -127,8 +127,19 @@ async def jwt(auth: AuthJWT = Depends()):
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/oauth2")
 
+class OAuth2PasswordRequestFormCustom:
+    def __init__(
+        self,
+        grant_type: str = "client_credentials",
+        client_id: str = Form(..., alias="client_id"),
+        client_secret: str = Form(..., alias="client_secret"),
+    ):
+        self.grant_type = grant_type
+        self.client_id = client_id
+        self.client_secret = client_secret
+
 @app.post('/auth/oauth2')
-def login_oauth(app: OAuth2App, Authorize: AuthJWT = Depends()):
+def login_oauth(app: OAuth2PasswordRequestFormCustom = Depends(), Authorize: AuthJWT = Depends()):
     if app.client_id != CLIENT_ID or app.client_secret != CLIENT_SECRET:
         raise HTTPException(status_code=401,detail="Bad application credentials")
     access_token = Authorize.create_access_token(subject=app.client_id)
