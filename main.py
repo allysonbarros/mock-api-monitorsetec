@@ -137,4 +137,10 @@ def login_oauth(app: OAuth2App, Authorize: AuthJWT = Depends()):
 
 @app.get("/oauth2")
 async def oauth2(token: str = Depends(oauth2_scheme)):
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciais inválidas",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     return __get_dict_resposta()
