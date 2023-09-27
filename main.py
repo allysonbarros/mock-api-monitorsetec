@@ -15,8 +15,8 @@ app = FastAPI()
 USERNAME = "usuario"
 PASSWORD = "s3cr3t"
 SIMPLE_TOKEN = "ffd25a96d536a91666233351fcdecebc"
-CLIENT_ID = ''
-CLIENT_SECRET = ''
+CLIENT_ID = 'app_example'
+CLIENT_SECRET = 'b1f8df2dede32e6c9723ed1896cd531e'
 
 siglas_variaveis = [
     "NACE", "NDE", "NAVS", "NAPS", "NTE", "OAE", "OTI", "NTS", "NAPP", "NPPB", 
@@ -111,8 +111,8 @@ async def simple_token(token: str = Depends(__get_token)):
 # JWT
 
 @app.post('/auth/jwt')
-def login_jwt(app: OAuth2App, Authorize: AuthJWT = Depends()):
-    if app.client_id != CLIENT_ID or app.client_secret != CLIENT_SECRET:
+def login_jwt(user: User, Authorize: AuthJWT = Depends()):
+    if user.username != USERNAME or user.password != PASSWORD:
         raise HTTPException(status_code=401,detail="Bad username or password")
     access_token = Authorize.create_access_token(subject=user.username)
     return {"access_token": access_token}
@@ -125,15 +125,14 @@ async def jwt(auth: AuthJWT = Depends()):
 
 # OAuth2
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/oauth2")
 
 @app.post('/auth/oauth2')
-def login_oauth(user: User, Authorize: AuthJWT = Depends()):
-    if user.username != USERNAME or user.password != PASSWORD:
-        raise HTTPException(status_code=401,detail="Bad username or password")
-    access_token = Authorize.create_access_token(subject=user.username)
-    return {"access_token": access_token}
+def login_oauth(app: OAuth2App, Authorize: AuthJWT = Depends()):
+    if app.client_id != CLIENT_ID or app.client_secret != CLIENT_SECRET:
+        raise HTTPException(status_code=401,detail="Bad application credentials")
+    access_token = Authorize.create_access_token(subject=app.client_id)
+    return {"access_token": access_token, "token_type": "bearer" }
 
 
 @app.get("/oauth2")
